@@ -2,19 +2,20 @@ import gym
 import numpy as np
 import os
 from datetime import datetime
-from ppo_torch import Agent
+from continuous_ppo import Agent
 from utils import plot_learning_curve
 
 if __name__ == '__main__':
-    env = gym.make("LunarLander-v2")
-    N = 20
-    batch_size = 5
-    n_epochs = 4
+    env = gym.make("LunarLanderContinuous-v2")
+    # print(env.action_space.shape)
+    N = 128 #2048
+    batch_size = 64
+    n_epochs = 10
     alpha = 0.0003
-    n_games = 10000
+    n_games = 1000
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    figure_file = f"plots/lunarlander{timestamp}.png"
+    figure_file = f"plots/lunarlandercontnuous{timestamp}.png"
     filename=f"tmp/ppo{timestamp}"
 
     if not os.path.exists(filename):
@@ -22,9 +23,10 @@ if __name__ == '__main__':
         print(f"Directory created at {filename}")
     else:
         print(f"Directory already exists at {filename}")
-    agent = Agent(n_actions=env.action_space.n, batch_size=batch_size, 
-                    alpha=alpha, n_epochs=n_epochs, 
-                    input_dims=env.observation_space.shape, chkpt_dir=filename)
+    agent = Agent(n_actions=env.action_space.shape[0], input_dims=env.observation_space.shape[0],
+                   gamma=0.99, gae_lambda=0.95,
+                  lr_decay_rate=0.31622776601, lr_decay_freq=20000000,
+                     chkpt_dir=filename)
 
     best_score = env.reward_range[0]
     score_history = []
@@ -43,6 +45,7 @@ if __name__ == '__main__':
             action, prob, val = agent.choose_action(observation)
             observation_, reward, done, info,_ = env.step(action)
             n_steps += 1
+            agent.t += 1
             score += reward
             agent.remember(observation, action, prob, val, reward, done)
             if n_steps % N == 0:
