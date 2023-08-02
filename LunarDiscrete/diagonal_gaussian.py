@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-# import torch.nn.functional as F
+import torch.nn.functional as F
 # import torch.distributions as D
 from torch.distributions import Normal
 
@@ -48,7 +48,7 @@ class DiagGaussian(nn.Module):
             dist (torch.distributions.Normal): normal distribution
 
         """
-        mean = self.fc_mean(x)
+        mean = torch.tanh(self.fc_mean(x))
         if self.constant_log_std:
             logstd = torch.clamp(self.logstd, self.log_std_min,
                                  self.log_std_max)
@@ -56,6 +56,6 @@ class DiagGaussian(nn.Module):
             logstd = torch.clamp(self.fc_logstd(x), self.log_std_min,
                                  self.log_std_max)
         if return_logstd:
-            return Normal(mean, logstd.exp()), logstd
+            return Normal(mean, F.softplus(logstd)), logstd
         else:
-            return Normal(mean, logstd.exp())
+            return Normal(mean, F.softplus(logstd))

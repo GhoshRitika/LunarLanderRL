@@ -17,7 +17,8 @@ if __name__ == '__main__':
     # print(env.action_space.shape[0])
     # print(env.observation_space.shape[0])
     agent = BC_Agent(n_actions=env.action_space.shape[0], 
-                    input_dims=env.observation_space.shape)
+                    input_dims=env.observation_space.shape, batch_size=batch_size,
+                    n_epochs=n_epochs)
     # Create the joystick actor
     actor = LunarLanderJoystickActor(env)
 
@@ -43,7 +44,7 @@ if __name__ == '__main__':
             action = action.detach().cpu().numpy()  # Convert tensor to numpy array
             # action = np.clip(action, -1, 1).astype(np.float32)
             # print(action)
-            observation, reward, done, info, _ = env.step(action[0])
+            observation, reward, done, info, _ = env.step(action)
             score += reward
 
         print('Game:', i+1, 'Score:', score)

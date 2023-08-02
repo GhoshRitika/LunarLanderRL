@@ -3,7 +3,7 @@ from continuous_ppo import Agent
 
 if __name__ == '__main__':
     env = gym.make("LunarLanderContinuous-v2", render_mode="human")
-    filename= 'tmp/ppo20230720203346'
+    filename= 'tmp/ppo20230726134213'
     agent = Agent(n_actions=env.action_space.shape[0], input_dims=env.observation_space.shape[0],
                      chkpt_dir=filename)
     agent.load_models()  # Load the saved models
