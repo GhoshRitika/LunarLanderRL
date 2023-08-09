@@ -1,23 +1,24 @@
-import gym
+import gymnasium as gym
 import numpy as np
 import torch as T
 import os
 from datetime import datetime
 from PPO import Agent
-from utils import plot_learning_curve, norm_action, add_actions, normalize_action
-import matplotlib.pyplot as plt
+from utils import plot_learning_curve
+import panda_gym
 
 
 if __name__ == '__main__':
-    env = gym.make("LunarLanderContinuous-v2")
+    # vectorize the environnement
+    env = gym.make('PandaReach-v3')
     N = 128
     batch_size = 64
     n_epochs = 10
     alpha = 0.0003
-    n_games = 500
+    n_games = 100
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M")
-    figure_file = f"plots/lunarlandercontinuous{timestamp}.png"
+    figure_file = f"plots/FrankaReach{timestamp}.png"
     filename=f"tmp/ppo{timestamp}"
 
     if not os.path.exists(filename):
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     else:
         print(f"Directory already exists at {filename}")
 
-    assistive_agent = Agent(n_actions=env.action_space.shape[0], input_dims=env.observation_space.shape[0],
+    assistive_agent = Agent(n_actions=env.action_space.shape[0], input_dims=env.observation_space["observation"].shape[0],
                 batch_size=64, policy_clip=0.2,
                 ent_coef=0.01, n_epochs=10,
                 l2_reg=False, lambda_init=20.0,
@@ -47,33 +48,35 @@ if __name__ == '__main__':
     learn_iters = 0
     avg_score = 0
     n_steps = 0
-    max_iters = 1000
+    max_iters = 10000
 
     for i in range(n_games):
-        observation = env.reset()
-        observation=observation[0]
+        observation, info = env.reset()
+        # observation=observation[0]
         done = False
         score = 0
         iters = 0 
         while not done:
-            action_ass, prob, val = assistive_agent.choose_action(observation)
+            # print(observation)
+            action_ass, prob, val = assistive_agent.choose_action(observation["observation"])
             # print("action:",action_ass)
-            observation_, reward, done, info,_ = env.step(action_ass)
-            if done: print("Done")
+            observation_, reward, terminated, truncated, info = env.step(action_ass)
+            if terminated or truncated:
+                done = True
+            # if done: print("Done")
             n_steps += 1
             iters +=1
             score += reward
-            assistive_agent.remember(observation, action_ass, prob, val, reward, done)
+            assistive_agent.remember(observation["observation"], action_ass, prob, val, reward, done)
             if n_steps % N == 0:
                 total = assistive_agent.learn()
-                loss_total.append(total.detach().cpu().numpy())
+                # loss_total.append(total.detach().cpu().numpy())
                 # assistive_agent.t += N
                 learn_iters += 1
             observation = observation_
             if iters>max_iters:
-                done= True
+                done = True
         score_history.append(score)
-        #try mean of entire instead of last 100
         avg_score = np.mean(score_history[-100:])
         # assistive_agent.save_models()
         if avg_score > best_score:

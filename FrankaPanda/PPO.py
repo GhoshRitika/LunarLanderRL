@@ -139,12 +139,12 @@ class Agent:
     def choose_action(self, observation):
         observation = T.tensor(observation, dtype=T.float).to(self.device)
         dist, value = self.actorcritic(observation)
-        action = dist.sample()
-        action = T.tanh(action)
+        action = dist.rsample()
+        
         probs =  dist.log_prob(action).detach().cpu().numpy()
-        action = action.detach().cpu().numpy()
         value = T.squeeze(value).item()
-
+        action = T.tanh(action)
+        action = action.detach().cpu().numpy()
         return action, probs, value
 
     def learn(self):

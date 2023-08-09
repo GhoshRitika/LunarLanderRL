@@ -66,17 +66,28 @@ class FrankaPandaJoystickActor(object):
 
 if __name__ == '__main__':
     import gymnasium as gym
+    # from stable_baselines.common.cmd_util import make_vec_env
     import panda_gym
 
     env = gym.make('PandaReach-v3', render_mode="human")
+    # env = make_vec_env(
+    #     'PandaReach-v3',
+    #     "robotics",
+    #     1, 0, flatten_dict_observations=False, env_kwargs={"render": True})
     actor = FrankaPandaJoystickActor(env)
-    # print(env.action_space)
+    print(env.action_space)
+    print(env.observation_space)
+    max_iters = 100
     for _ in range(10):
         observation, info = env.reset()
         score = 0
         terminated= False
         truncated = False
+        iters = 0
+        print("Initial", observation["observation"][0:3])
+        print("desired", observation["desired_goal"][0:3])
         while not terminated or not truncated:
+            # print(observation)
             # action = env.action_space.sample() # random action
             # current_position = observation["observation"][0:3]
             # desired_position = observation["desired_goal"][0:3]
@@ -84,6 +95,10 @@ if __name__ == '__main__':
             action = actor(observation)
             observation, reward, terminated, truncated, info = env.step(action)
             score += reward
+            iters += 1
+            if iters>max_iters:
+                terminated= True
+                truncated = True
             # print("d", np.linalg.norm(observation["observation"][0:3] - observation["desired_goal"][0:3], axis=-1))
         print(f"score: {score}")
 
