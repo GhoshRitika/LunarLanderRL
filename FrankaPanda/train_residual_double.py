@@ -8,7 +8,7 @@ from Residual import Agent
 from behaviorcloning import BC_Agent
 from utils import plot_learning_curve, norm_action, add_actions, normalize_action
 import matplotlib.pyplot as plt
-from joystck import PIDController
+from joystick import PIDController
 
 
 if __name__ == '__main__':

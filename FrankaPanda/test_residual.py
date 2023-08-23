@@ -4,7 +4,7 @@ import torch as T
 from datetime import datetime
 from Residual import Agent
 from utils import norm_action, normalize_action, add_actions
-from joystck import FrankaPandaJoystickActor
+from joystick import FrankaPandaJoystickActor
 import matplotlib.pyplot as plt
 import panda_gym
 

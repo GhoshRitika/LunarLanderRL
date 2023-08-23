@@ -8,12 +8,12 @@ from Residual import Agent
 from behaviorcloning import BC_Agent
 from utils import plot_learning_curve, norm_action, add_actions, normalize_action
 import matplotlib.pyplot as plt
-from joystck import PIDController
+from joystick import PIDController
 
 
 if __name__ == '__main__':
     env = gym.make('PandaReachDense-v3')
-    print("DENSE")
+
     N = 128 #2048
     batch_size = 64
     n_epochs = 10

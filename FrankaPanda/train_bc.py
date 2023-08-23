@@ -3,7 +3,7 @@ import torch as T
 from behaviorcloning import BC_Agent
 from collect_data import collect_expert_demonstrations
 from utils import plot_learning_curve
-from joystck import FrankaPandaJoystickActor
+from joystick import FrankaPandaJoystickActor
 import gymnasium as gym
 import panda_gym
 

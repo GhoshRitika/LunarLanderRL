@@ -1,6 +1,6 @@
 import pandas as pd
 import gym
-from joystck import FrankaPandaJoystickActor, PIDController
+from joystick import FrankaPandaJoystickActor, PIDController
 
 def collect_expert_demonstrations(env, actor, num_episodes, observations_csv, actions_csv):
     observations_data = {'observation': []}
