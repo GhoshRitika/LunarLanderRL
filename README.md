@@ -75,8 +75,10 @@ python3 joystick.py
 Collect data for the human surrogate run `python3 collect_data.py` and to train the behavioral cloning model
 run `python3 train_bc.py`. If you want to visualize the human surrogate policy performance run `python3 test_bc.py`.
 NOTE: For the sake of getting expert data to train on a PID control loop was used as the human surrage in this case.
+
 **Train the Residual Policy:**
-After training the human agent, the Residual policy can be trained by running `python3 train_residual.py`. The resulting policy can be tested by running `python3 test_residual.py`
+After training the human agent, the Residual policy can be trained by running `python3 train_residual.py`. The resulting policy can be tested by running `python3 test_residual.py`.
+
 **Assistive Agent with Multiple Goals:**
 To train the the Residual policy with two goals, where one goal has greater penalties, run `python3 train_residual_double.py`. The resulting policy can be tested by running `python3 test_double.py`
 
