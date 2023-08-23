@@ -2,6 +2,7 @@
 import pygame
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 #####################################
 # Change these to match your joystick
@@ -64,34 +65,56 @@ class FrankaPandaJoystickActor(object):
     def reset(self):
         self.human_agent_action[:] = 0.
 
+class PIDController:
+    def __init__(self, kp, ki, kd):
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+        self.prev_error = 0
+        self.integral = 0
+
+    def compute_action(self, error):
+        self.integral += error
+        derivative = error - self.prev_error
+        self.prev_error = error
+        action = self.kp * error + self.ki * self.integral + self.kd * derivative
+        return action
+
 if __name__ == '__main__':
     import gymnasium as gym
     # from stable_baselines.common.cmd_util import make_vec_env
     import panda_gym
-
-    env = gym.make('PandaReach-v3', render_mode="human")
-    # env = make_vec_env(
-    #     'PandaReach-v3',
-    #     "robotics",
-    #     1, 0, flatten_dict_observations=False, env_kwargs={"render": True})
+    goal_his = np.array([[-0.09425813, -0.05269751, 0.07325654], 
+                      [0.00141661, 0.00123507, 0.14757843],
+                      [-0.00135891, -0.08630279, 0.04110381],
+                      [ 0.07980205, -0.01122603, 0.11293837],
+                      [-0.13518204,  0.13425152, 0.08225469],
+                      [0.07082976, 0.13334234, 0.083761],
+                      [-0.11354388, 0.13814254, 0.05822545],
+                      [0.01594417, 0.07936273, 0.22025128],
+                      [ 0.09835389, -0.07078907,  0.17652114],
+                      [-0.00091254,  0.05386124,  0.28241307]])
+    score_his = [-234.2966771274805, -150.35052871331573, -212.95436526089907, -149.89449425041676,
+                 -194.23260818049312, -130.69264344871044, -144.02622505649924, -35.998916912823915, -20.194139402359724, -162.23665458709002]
+    score_results = [-1260.0, -15.0, -340.0, -792.0, -1280.0, -109.0, -438.0, -61.0, -170.0, -286.0]
+    goals = []
+    env = gym.make('PandaReachDense-v3', render_mode="human", goal_random=True)
     actor = FrankaPandaJoystickActor(env)
-    print(env.action_space)
-    print(env.observation_space)
-    max_iters = 100
+    max_iters = 1000
+    score_history = []
     for _ in range(10):
-        observation, info = env.reset()
+        observation, info = env.reset() #goal_val=np.array([-0.10652074, 0.00213265, 0.19745056])
         score = 0
         terminated= False
         truncated = False
         iters = 0
         print("Initial", observation["observation"][0:3])
         print("desired", observation["desired_goal"][0:3])
+        goals.append(observation["desired_goal"][0:3])
         while not terminated or not truncated:
-            # print(observation)
-            # action = env.action_space.sample() # random action
-            # current_position = observation["observation"][0:3]
-            # desired_position = observation["desired_goal"][0:3]
-            # action = 0.05*(desired_position - current_position)
+            current_position = observation["observation"][0:3]
+            desired_position = observation["desired_goal"][0:3]
+            action = 0.05*(desired_position - current_position)
             action = actor(observation)
             observation, reward, terminated, truncated, info = env.step(action)
             score += reward
@@ -99,7 +122,56 @@ if __name__ == '__main__':
             if iters>max_iters:
                 terminated= True
                 truncated = True
-            # print("d", np.linalg.norm(observation["observation"][0:3] - observation["desired_goal"][0:3], axis=-1))
         print(f"score: {score}")
+        score_history.append(score)
 
     env.close()
+    x = [i+1 for i in range(len(score_history))]
+    plt.plot(x, score_history, color='darkblue')
+    plt.xlabel('Iterations')
+    plt.ylabel('Score')
+    plt.legend()
+    plt.title('Score of Lunar Lander')
+    plt.savefig(f"plots/scores2")
+    plt.clf()
+
+    # # Define PID gains
+    # kp = 0.05  # Proportional gain
+    # ki = 0.001  # Integral gain
+    # kd = 0.3  # Derivative gain
+
+    # env = gym.make('PandaReachDense-v3', render_mode="human", goal_random=False)
+    # # env = gym.make('PandaReachDouble-v3', render_mode="human", goal_random=False)
+    # # actor = FrankaPandaJoystickActor(env)
+    # max_iters = 10000
+
+    # for _ in range(10):
+    #     observation, info = env.reset()
+    #     score = 0
+    #     terminated = False
+    #     truncated = False
+    #     iters = 0
+    #     print("Initial", observation["observation"][0:3])
+    #     print("desired", observation["desired_goal"][0:3])
+
+    #     pid_controller = PIDController(kp, ki, kd)
+
+    #     while not terminated:
+    #         current_position = observation["observation"][0:3]
+    #         desired_position = observation["desired_goal"][0:3]
+
+    #         error = desired_position - current_position
+
+    #         # Compute control action using the PID controller
+    #         action = pid_controller.compute_action(error)
+
+    #         observation, reward, terminated, truncated, info = env.step(action)
+    #         score += reward
+    #         iters += 1
+    #         if iters > max_iters:
+    #             terminated = True
+    #             truncated = True
+    #         # print(iters)
+    #     print(f"score: {score}")
+
+    # env.close()

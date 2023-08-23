@@ -1,6 +1,6 @@
 import pandas as pd
 import gym
-from joystck import FrankaPandaJoystickActor
+from joystck import FrankaPandaJoystickActor, PIDController
 
 def collect_expert_demonstrations(env, actor, num_episodes, observations_csv, actions_csv):
     observations_data = {'observation': []}
@@ -12,22 +12,59 @@ def collect_expert_demonstrations(env, actor, num_episodes, observations_csv, ac
     else:
         mode = 'w'
         flag = True
+    # for episode in range(num_episodes):
+    #     print("Episode number: ", episode)
+
+    #     obs = env.reset()
+    #     obs = obs[0]
+    #     env.render()
+    #     done = False
+    #     reward = 0.0
+    #     while not done:
+    #         action = actor(obs)
+    #         observations_data['observation'].append(obs["observation"].tolist())
+    #         actions_data['action'].append(action.tolist())
+    #         obs, r, done, info, _ = env.step(action)
+    #         reward += r
+    #     print(reward)
+    kp = 0.05  # Proportional gain
+    ki = 0.001  # Integral gain
+    kd = 0.3  # Derivative gain
+
+    max_iters = 10000
+
     for episode in range(num_episodes):
         print("Episode number: ", episode)
+        observation, info = env.reset()
+        score = 0
+        terminated = False
+        truncated = False
+        iters = 0
+        print("Initial", observation["observation"][0:3])
+        print("desired", observation["desired_goal"][0:3])
 
-        obs = env.reset()
-        obs = obs[0]
-        env.render()
-        done = False
-        reward = 0.0
-        while not done:
-            action = actor(obs)
-            observations_data['observation'].append(obs["observation"].tolist())
+        pid_controller = PIDController(kp, ki, kd)
+
+        while not terminated:
+            current_position = observation["observation"][0:3]
+            desired_position = observation["desired_goal"][0:3]
+
+            error = desired_position - current_position
+
+            # Compute control action using the PID controller
+            action = pid_controller.compute_action(error)
+            observations_data['observation'].append(observation["observation"].tolist())
             actions_data['action'].append(action.tolist())
-            obs, r, done, info, _ = env.step(action)
-            reward += r
-        print(reward)
+            observation, reward, terminated, truncated, info = env.step(action)
+            score += reward
+            iters += 1
+            if iters > max_iters:
+                terminated = True
+                truncated = True
+            # print(iters)
+        print(f"score: {score}")
 
+    env.close()
     observations_df = pd.DataFrame(observations_data)
     actions_df = pd.DataFrame(actions_data)
 
@@ -47,7 +84,7 @@ if __name__ == '__main__':
     # Create the joystick actor
     actor = FrankaPandaJoystickActor(env)
     # Define the number of expert episodes and the CSV filename
-    num_episodes = 20
+    num_episodes = 1000
     csv_filename = 'expert_demonstrations.csv'
 
     collect_expert_demonstrations(env, actor, num_episodes, 'observations.csv', 'actions.csv')

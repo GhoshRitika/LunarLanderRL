@@ -37,7 +37,7 @@ class BCNetwork(nn.Module):
         self.to(self.device)
 
     def forward(self, state):
-        dist = self.bc(state)
+        dist, mean, std = self.bc(state)
         continuous_actions = dist.sample()
         return continuous_actions
 

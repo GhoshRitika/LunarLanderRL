@@ -19,6 +19,6 @@ def normalize_action(ac, low, high):
         return 2.0 * (ac - low) / (high - low) - 1.0
 
 def add_actions(env, ac1, ac2):
-    ac = ac1 + ac2
+    ac = (0.1*ac1) + ac2
     return np.maximum(np.minimum(ac, env.action_space.high),
                         env.action_space.low)

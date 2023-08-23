@@ -58,4 +58,4 @@ class DiagGaussian(nn.Module):
         if return_logstd:
             return Normal(mean, logstd.exp()), logstd
         else:
-            return Normal(mean, logstd.exp())
+            return Normal(mean, logstd.exp()), mean, logstd.exp()

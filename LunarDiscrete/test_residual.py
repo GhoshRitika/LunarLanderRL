@@ -9,7 +9,7 @@ from Joystick import LunarLanderJoystickActor
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    env = gym.make("LunarLanderContinuous-v2", render_mode="human")
+    env = gym.make("LunarLanderContinuous-v2")
 
     N = 128 #2048
     batch_size = 64
@@ -17,9 +17,9 @@ if __name__ == '__main__':
     alpha = 0.0003
     n_games = 100
 
-    filename=f"tmp/residual202308021104"
-    # filename=f"tmp/ppo202308011529"
-    # filename=f"tmp/ppo20230726134213"
+    filename=f"tmp/residual_final_reg"
+    # filename=f"tmp/residual_final_tanh"
+    # filename=f"tmp/residual_final_norm_tanh"
 
     assistive_agent = Agent(n_actions=env.action_space.shape[0], input_dims=env.observation_space.shape[0],
                    gamma=0.99, gae_lambda=0.95,
@@ -28,10 +28,10 @@ if __name__ == '__main__':
     assistive_agent.load_models()
 
     player_agent = LunarLanderJoystickActor(env)
-
+    score_history = []
     for ep in range(10):
         ob = env.reset()
-        ob=ob[0]
+        # ob=ob[0]
         env.render()
         done = False
         reward = 0.0
@@ -43,21 +43,13 @@ if __name__ == '__main__':
             n_steps += 1
             action_ = player_agent(ob)
             action_player = norm_action(env, np.asarray(action_))
-            # action_player = norm_action(env, action_.cpu().numpy())
             action_player = T.tensor(np.array([action_player]), dtype=T.float32).to(assistive_agent.device)
             ob_ = T.tensor(np.array([ob]), dtype=T.float32).to(assistive_agent.device)
             observation = (ob_, action_player)
-            # print(observation)
             action_ass, prob, val = assistive_agent.choose_action(observation)
-            # print(action_ass)
-            # action_ass = normalize_action(np.asarray(action_ass), -3, 3)
             action = add_actions(env, action_ass, np.asarray(action_))
-            # action = add_actions(env, np.asarray(action_ass), action_.cpu().numpy())
-            ob, r, done, info, _ = env.step(action[0])
+            ob, r, done, info = env.step(action[0])
             reward += r
-            # print("Assisstve acton", action_ass)
-            # print("Player action", action_)
-            # print("Total action", action)
             action_h = np.vstack((action_h, action_))
             action_r = np.vstack((action_r, action_ass[0]))
             actions = np.vstack((actions, action[0]))
@@ -73,11 +65,20 @@ if __name__ == '__main__':
         plt.ylabel('Action Values')
         plt.legend()
         plt.title('Comparison of Actions')
-        plt.savefig(f"plots/results{ep}")
+        plt.savefig(f"plots/Trial{4}/results{ep}")
         plt.clf()
+        score_history.append(reward)
         print(reward)
         
     env.close()
+    x = [i+1 for i in range(len(score_history))]
+    plt.plot(x, score_history, color='darkblue')
+    plt.xlabel('Iterations')
+    plt.ylabel('Score')
+    plt.legend()
+    plt.title('Score of Lunar Lander')
+    plt.savefig(f"plots/Trial{4}/score{ep}")
+    plt.clf()
 
     # y = [i+1 for i in range(n_steps)]
     # plt.plot(y, action_h[:,0], label='action_h[0]', color='blue')

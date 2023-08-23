@@ -6,6 +6,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.distributions.categorical import Categorical
 from diagonal_gaussian import DiagGaussian
+from utils import normalize_action
 
 class PPOMemory:
     def __init__(self, batch_size):
@@ -58,59 +59,32 @@ class ActorCriticNetwork(nn.Module):
         self.input_dims = input_dims+n_actions
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
-        self.fc3_dims = fc3_dims
         self.n_actions = n_actions
         self.checkpoint_file = os.path.join(chkpt_dir, 'actor_critic')
-        # self.fc1 = nn.Linear(self.input_dims, fc1_dims)
-        # self.fc2 = nn.Linear(fc1_dims, fc2_dims)
-        # # self.fc3 = nn.Linear(fc2_dims, fc3_dims).float()
-        # self.dist = DiagGaussian(fc2_dims, n_actions)
-        # for p in self.dist.fc_mean.parameters():
-        #     nn.init.constant_(p, 0.)
+        self.fc1 = nn.Linear(self.input_dims, fc1_dims)
+        self.fc2 = nn.Linear(fc1_dims, fc2_dims)
+        self.dist = DiagGaussian(fc2_dims, n_actions, constant_log_std=False)
+        for p in self.dist.fc_mean.parameters():
+            nn.init.constant_(p, 0.)
 
-        # self.vf_fc1 = nn.Linear(self.input_dims, fc1_dims)
-        # self.vf_fc2 = nn.Linear(fc1_dims, fc2_dims)
-        # # self.vf_fc3 = nn.Linear(fc2_dims, fc3_dims).float()
-        # self.vf_out = nn.Linear(fc2_dims, 1)
-        self.actor = nn.Sequential(
-            nn.Linear(self.input_dims, fc1_dims),
-            nn.ReLU(),
-            nn.Linear(fc1_dims, fc2_dims),
-            nn.ReLU(),
-            DiagGaussian(fc2_dims, n_actions))
-        self.critic = nn.Sequential(
-            nn.Linear(self.input_dims, fc1_dims),
-            nn.ReLU(),
-            nn.Linear(fc1_dims, fc2_dims),
-            nn.ReLU(),
-            nn.Linear(fc2_dims, 1))
-        # self.optimizer = optim.Adam(self.parameters(), lr=alpha)
-        # self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
-        # self.to(self.device)
+        self.vf_fc1 = nn.Linear(self.input_dims, fc1_dims)
+        self.vf_fc2 = nn.Linear(fc1_dims, fc2_dims)
+        self.vf_out = nn.Linear(fc2_dims, 1)
 
     def forward(self, x):
         """Forward."""
-        # print(x)
         ob = T.cat(x, dim=1)
-        # print("ob:", ob)
         net = ob
-        # net = F.relu(self.fc1(net))
-        # net = F.relu(self.fc2(net))
-        # net = F.relu(self.fc3(net))
-        # pi = self.dist(net)
+        net = F.relu(self.fc1(net))
+        net = F.relu(self.fc2(net))
+        pi, mean, std = self.dist(net)
 
-        # net = ob
-        # net = F.relu(self.vf_fc1(net))
-        # net = F.relu(self.vf_fc2(net))
-        # # net = F.relu(self.vf_fc3(net))
-        # vf = self.vf_out(net)
-        pi=self.actor(net)
-        # for p in self.dist.fc_mean.parameters():
-        #     nn.init.constant_(p, 0.)
         net = ob
-        vf = self.critic(net)
+        net = F.relu(self.vf_fc1(net))
+        net = F.relu(self.vf_fc2(net))
+        vf = self.vf_out(net)
 
-        return pi, vf
+        return pi, vf, mean, std
 
     def save_checkpoint(self):
         T.save(self.state_dict(), self.checkpoint_file)
@@ -175,19 +149,48 @@ class Agent:
         self.actorcritic.load_checkpoint()
         # self.critic.load_checkpoint()
 
-    def choose_action(self, observation):
-        # print(observation)
-        # state = T.tensor(observation, dtype=T.float).to(self.device)
-        dist, value = self.actorcritic(observation)
-        action = dist.sample()
-        action = T.tanh(action)
-        # print(action)
-        probs =  dist.log_prob(action).detach().cpu().numpy()
-        # probs = probs.detach().cpu().numpy()
-        action = action.detach().cpu().numpy()
-        value = T.squeeze(value).item()
+## filename=f"tmp/residual_final_tanh" RESULTS NOT GREAT, doesnt do much
+    # def choose_action(self, observation):
+    #     dist, value, mean, std = self.actorcritic(observation)
+    #     action = dist.sample()
+    #     probs =  dist.log_prob(action).detach().cpu().numpy()
+    #     value_ass = T.squeeze(value).item()
+    #     action_detached = action.detach().cpu().numpy()
+    #     mean_detached = mean.detach().cpu().numpy()
+    #     std_detached = std.detach().cpu().numpy()
+    #     action_ass=np.tanh(action_detached)
+    #     # print(action_ass)
+    #     return action_ass, probs, value_ass
 
-        return action, probs, value
+# filename=f"tmp/residual_final_reg" OUTSIDE ACTION LIMITS BUT GOOD RESULTS
+    # def choose_action(self, observation):
+    #     dist, value, mean, std = self.actorcritic(observation)
+    #     action = dist.sample()
+    #     probs =  dist.log_prob(action).detach().cpu().numpy()
+    #     value_ass = T.squeeze(value).item()
+    #     action_detached = action.detach().cpu().numpy()
+    #     # print("Action before:", action_detached)
+    #     mean_detached = mean.detach().cpu().numpy()
+    #     std_detached = std.detach().cpu().numpy()
+    #     # print("Mean and std", mean_detached-std_detached, mean_detached+std_detached)
+    #     action_ass = normalize_action(np.asarray(action_detached), (mean_detached-std_detached), (mean_detached+std_detached))
+    #     # print("Action after normalizing:", action_ass)
+    #     # action_ass_clipped = np.tanh(action_ass)
+    #     # print("Action after ")
+    #     return action_ass, probs, value_ass
+
+## filename=f"tmp/residual_final_norm_tanh"
+    def choose_action(self, observation):
+        dist, value, mean, std = self.actorcritic(observation)
+        action = dist.sample()
+        probs =  dist.log_prob(action).detach().cpu().numpy()
+        value_ass = T.squeeze(value).item()
+        action_detached = action.detach().cpu().numpy()
+        # print("Action before:", action_detached)
+        mean_detached = mean.detach().cpu().numpy()
+        std_detached = std.detach().cpu().numpy()
+        action_ass = np.tanh(normalize_action(np.asarray(action_detached), (mean_detached-std_detached), (mean_detached+std_detached)))
+        return action_ass, probs, value_ass
 
     def learn(self):
         lr_frac = self.lr_decay_rate ** (self.t // self.lr_decay_freq)
@@ -226,7 +229,7 @@ class Agent:
 
                 #should this action be normed??
                 # print(actions)
-                dist, critic_value = self.actorcritic((states, actions))
+                dist, critic_value, _, _ = self.actorcritic((states, actions))
                 critic_value = T.squeeze(critic_value)
                 # if self.t < self.policy_training_start:
                 #     pi_loss = T.Tensor([0.0]).to(self.device)
@@ -277,9 +280,11 @@ class Agent:
                 loss_lambda = (lambda_ * (rewards[batch].sum()
                                             - self.reward_threshold * neps)
                                 / rewards[batch].size()[0])
-                if self.t >= self.policy_training_start:
-                    pi_loss = (reg_loss + lambda_ * pi_loss) / (1. + lambda_)
-                total_loss = (pi_loss + self.vf_coef * value_loss
+                # Detach the lambda_ tensor
+                detached_lambda = lambda_.detach()
+                # if self.t >= self.policy_training_start:
+                new_pi_loss = (reg_loss + detached_lambda * pi_loss) / (1. + detached_lambda)
+                total_loss = (new_pi_loss + self.vf_coef * value_loss
                                 - self.ent_coef * ent_loss)
                 # total_loss = (pi_loss + value_loss)
                 # if self.t >= max(self.policy_training_start,

@@ -52,17 +52,18 @@ if __name__ == '__main__':
 
     for i in range(n_games):
         observation, info = env.reset()
-        # observation=observation[0]
         done = False
+        # terminated = False
+        # truncated = False
         score = 0
         iters = 0 
         while not done:
             # print(observation)
             action_ass, prob, val = assistive_agent.choose_action(observation["observation"])
             # print("action:",action_ass)
-            observation_, reward, terminated, truncated, info = env.step(action_ass)
-            if terminated or truncated:
-                done = True
+            observation_, reward, done, _, info = env.step(action_ass)
+            # if terminated or truncated:
+            #     done = True
             # if done: print("Done")
             n_steps += 1
             iters +=1

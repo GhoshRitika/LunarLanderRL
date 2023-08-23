@@ -16,7 +16,10 @@ def norm_action(env, ac):
         return 2.0 * (ac - low) / (high - low) - 1.0
 
 def normalize_action(ac, low, high):
-        return 2.0 * (ac - low) / (high - low) - 1.0
+    epsilon = 1e-6
+    result = 2.0 * (ac - low) / (high - low + epsilon) - 1.0
+
+    return result
 
 def add_actions(env, ac1, ac2):
     ac = ac1 + ac2

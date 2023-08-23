@@ -66,7 +66,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    env = gym.make("LunarLanderContinuous-v2", render_mode="human")
+    env = gym.make("LunarLanderContinuous-v2")
     # env = gym.make("LunarLander-v2")
 
     actor = LunarLanderJoystickActor(env)
@@ -78,7 +78,7 @@ if __name__ == '__main__':
         reward = 0.0
 
         while not done:
-            ob, r, done, info, _ = env.step(actor(ob))
+            ob, r, done, info = env.step(actor(ob))
             reward += r
         print(reward)
     env.close()
