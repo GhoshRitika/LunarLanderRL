@@ -1,67 +1,83 @@
-# Shared Autonomy with Reinforcement Learnign
+# Shared Autonomy with Reinforcement Learning
 Author: Ritika Ghosh
 
 https://github.com/GhoshRitika/LunarLanderRL/assets/60728026/944e5f9f-7647-4cbb-b00b-01b157ff75bc
 
 ## **Description**
-
+This project allows for human robot collaboration with the help of an assistive agent which minimally adjusts the human actions to improve the task performance without any prior knowledge or restrictive assumptions about the environment, goal space or human policy. This is an adaptation of model free
+constrained residual policy using proximal policy optimization for shared control. It has been tested on Lunar Lander and Franka Reach environments.
 
 ## **Setup Guidelines**
-The following packages are meant to be used with ROS 2 Humble.
-1. Make sure ROS packages are most recent and up-to-date
+The following are the requirements to setup the project:
+1. Connect to xbox 360 controller.
+2. Make sure all existing packages are most recent and up-to-date
 ```
 sudo apt update
 sudo apt upgrade
 ```
-2. Install Moveit!: `sudo apt install ros-humble-moveit`
-3. Create a new ROS2 workspace and enter it
+2. Install dependencies:
 ```
-mkdir -p copycatws/src 
-cd copycatws
+pip install torch torchvision
+pip install tensorflow-gpu==1.15.0
+pip install gin-config
+pip install PyOpenGL 
+pip install pygame PyOpenGL_accelerate
+pip install pandas
 ```
-4. Install dependencies:
+3. Install Lunar Lander environment, OpenAI Gym:
 ```
-sudo apt-get install cmake gcc g++ libpopt-dev
-pip install media pipe
-sudo apt-get install python3-opencv
+pip install gym
+pip install gym[box2d]
 ```
-- Download, build, and install PCAN-USB driver for Linux: [libpcan](http://www.peak-system.com/fileadmin/media/linux/index.htm#download)
-    ```
-    tar -xzvf peak-linux-driver-x.x.tar.gz
-    cd peak-linux-driver-x.x
-    make NET=NO
-    sudo make install
-    sudo modprobe pcan
-    ```
-- Download, build, and install PCAN-Basic API for Linux: [libpcanbasic](https://www.peak-system.com/Software-APIs.305.0.html?&L=1)
-    ```
-    tar -xzvf PCAN_Basic_Linux-x.x.x.tar.gz
-    cd PCAN_Basic_Linux-x.x.x/pcanbasic
-    make
-    sudo make install
-    ```
-- Download, build, and install Grasping Library for Linux, "libBHand": [Grasping_Library_for_Linux](http://wiki.wonikrobotics.com/AllegroHandWiki/index.php/Grasping_Library_for_Linux)
-5. Download [this package](https://github.com/GhoshRitika/Allegro_hand) into the src directory: `git clone git@github.com:GhoshRitika/Allegro_hand.git`
-6. Download my [gesture recognition](https://github.com/GhoshRitika/go1-gesture-command) fork in the same src directory: `git clone git@github.com:GhoshRitika/go1-gesture-command.git`
+4. Install Franka Reach environment, panda-gym: 
+```
+git clone https://github.com/GhoshRitika/panda-gym
+pip install -e panda-gym
+```
+5. Download [this package](https://github.com/GhoshRitika/LunarLanderRL) into the current directory: `git clone git@github.com:GhoshRitika/LunarLanderRL.git`
+
 
 ## **Contents**
-Refer to README of individual packages for more detailed instructions and information.
-1. 
-2. 
+This project is divided into 2 sections for each of the training environments.
+1. `LunarContinuous`: This section contains the code for joystick control as well as training and testing the assistive agent for the Lunar Lander Continuous environment.
+2. `FrankaPanda`: This section contains the code for joystick control as well as training and testing the assistive agent for the Franka Reach environment.
 
 ## **Package Structure**
 ### Lunar Lander: 
 **Joystick User Guide:**
-
+The Lunar Lander environment allows control over its 3 thrusters, the main thruster along with its 2 lateral thrusters.
+    - Right Joystick Vertical Motion -> Main Thruster
+    - Right Joystick Horizontal Motion -> Lateral Thrusters
+In order to play without assistance of the agent:
+```
+cd LunarContinuous
+python3 joystick.py
+```
 **Train the Human Surrogate:**
-**Train the Residual Policy:**
-**Playing with the Assistive Agent:**
+Collect data for the human surrogate run `python3 collect_data.py` and to train the behavioral cloning model
+run `python3 train_bc.py`. If you want to visualize the human surrogate policy performance run `python3 test_bc.py`.
 
+**Train the Residual Policy:**
+After training the human agent, the Residual policy can be trained by running `python3 train_ppo.py`. The resulting policy can be tested by running `python3 test_residual.py`
 
 ### Franka Panda:
 **Joystick User Guide:**
+This project uses the IK controller to control the x, y & z position of the end effector. 
+    - Right Joystick Vertical Motion -> Z axis
+    - Right Joystick Horizontal Motion -> X axis
+    - Left Joystick Horizontal Motion -> Y axis
+In order to play without assistance of the agent:
+```
+cd FrankaPanda
+python3 joystick.py
+```
 **Train the Human Surrogate:**
+Collect data for the human surrogate run `python3 collect_data.py` and to train the behavioral cloning model
+run `python3 train_bc.py`. If you want to visualize the human surrogate policy performance run `python3 test_bc.py`.
+NOTE: For the sake of getting expert data to train on a PID control loop was used as the human surrage in this case.
 **Train the Residual Policy:**
-**Playing with the Assistive Agent:**
+After training the human agent, the Residual policy can be trained by running `python3 train_residual.py`. The resulting policy can be tested by running `python3 test_residual.py`
+**Assistive Agent with Multiple Goals:**
+To train the the Residual policy with two goals, where one goal has greater penalties, run `python3 train_residual_double.py`. The resulting policy can be tested by running `python3 test_double.py`
 
-### For more detailed information: [this package](https://github.com/GhoshRitika/Allegro_hand)
+### For more detailed information check out [this link](https://ghoshritika.github.io/SharedAutonomy.html)
