@@ -11,9 +11,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     env = gym.make("LunarLanderContinuous-v2")
-    # print(env.action_space.shape)
-    # print(env.observation_space.shape)
-    N = 128 #2048
+    N = 128 
     batch_size = 64
     n_epochs = 10
     alpha = 0.0003

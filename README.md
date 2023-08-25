@@ -12,7 +12,7 @@ The following are the requirements to setup the project:
 1. Connect to xbox 360 controller.
 2. Make sure all existing packages are most recent and up-to-date
 ```
-sudo apt update
+sudo apt updatels
 sudo apt upgrade
 ```
 2. Install dependencies:
