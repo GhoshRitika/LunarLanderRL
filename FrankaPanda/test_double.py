@@ -35,9 +35,7 @@ if __name__ == '__main__':
                       [-0.03348396,  0.12122231,  0.01641202],
                       [0.07289395, -0.11697372,  0.26891217],
                       [0.02272988, 0.11841866, 0.22751188]])
-    # filename=f"tmp/residual_dense_reward_just_tanh"
     filename=f"tmp/residual_dense_reward_tanh"
-    # filename=f"tmp/residual_dense_reward"
 
     assistive_agent = Agent(n_actions=env.action_space.shape[0], input_dims=env.observation_space["observation"].shape[0],
                    gamma=0.99, gae_lambda=0.95,

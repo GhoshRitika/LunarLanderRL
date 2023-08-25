@@ -46,7 +46,6 @@ def collect_expert_demonstrations(env, actor, num_episodes, observations_csv, ac
             if iters > max_iters:
                 terminated = True
                 truncated = True
-            # print(iters)
         print(f"score: {score}")
 
     env.close()

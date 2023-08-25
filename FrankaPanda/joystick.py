@@ -80,7 +80,6 @@ class PIDController:
 
 if __name__ == '__main__':
     import gymnasium as gym
-    # from stable_baselines.common.cmd_util import make_vec_env
     import panda_gym
     goal_his = np.array([[-0.09425813, -0.05269751, 0.07325654], 
                       [0.00141661, 0.00123507, 0.14757843],
@@ -101,7 +100,7 @@ if __name__ == '__main__':
     max_iters = 1000
     score_history = []
     for _ in range(10):
-        observation, info = env.reset() #goal_val=np.array([-0.10652074, 0.00213265, 0.19745056])
+        observation, info = env.reset()
         score = 0
         terminated= False
         truncated = False
@@ -130,44 +129,3 @@ if __name__ == '__main__':
     plt.title('Score of Lunar Lander')
     plt.savefig(f"plots/scores2")
     plt.clf()
-
-    # # Define PID gains
-    # kp = 0.05  # Proportional gain
-    # ki = 0.001  # Integral gain
-    # kd = 0.3  # Derivative gain
-
-    # env = gym.make('PandaReachDense-v3', render_mode="human", goal_random=False)
-    # # env = gym.make('PandaReachDouble-v3', render_mode="human", goal_random=False)
-    # # actor = FrankaPandaJoystickActor(env)
-    # max_iters = 10000
-
-    # for _ in range(10):
-    #     observation, info = env.reset()
-    #     score = 0
-    #     terminated = False
-    #     truncated = False
-    #     iters = 0
-    #     print("Initial", observation["observation"][0:3])
-    #     print("desired", observation["desired_goal"][0:3])
-
-    #     pid_controller = PIDController(kp, ki, kd)
-
-    #     while not terminated:
-    #         current_position = observation["observation"][0:3]
-    #         desired_position = observation["desired_goal"][0:3]
-
-    #         error = desired_position - current_position
-
-    #         # Compute control action using the PID controller
-    #         action = pid_controller.compute_action(error)
-
-    #         observation, reward, terminated, truncated, info = env.step(action)
-    #         score += reward
-    #         iters += 1
-    #         if iters > max_iters:
-    #             terminated = True
-    #             truncated = True
-    #         # print(iters)
-    #     print(f"score: {score}")
-
-    # env.close()
