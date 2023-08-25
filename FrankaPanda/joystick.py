@@ -17,8 +17,6 @@ class FrankaPandaJoystickActor(object):
 
     def __init__(self, env, fps=60):
         """Init."""
-        # if env.num_envs > 1:
-        #     raise ValueError("Only one env can be controlled with the joystick.")
         self.env = env
         self.human_agent_action = np.array([[0., 0., 0.]], dtype=np.float32)
         pygame.joystick.init()

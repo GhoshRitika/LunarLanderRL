@@ -12,21 +12,6 @@ def collect_expert_demonstrations(env, actor, num_episodes, observations_csv, ac
     else:
         mode = 'w'
         flag = True
-    # for episode in range(num_episodes):
-    #     print("Episode number: ", episode)
-
-    #     obs = env.reset()
-    #     obs = obs[0]
-    #     env.render()
-    #     done = False
-    #     reward = 0.0
-    #     while not done:
-    #         action = actor(obs)
-    #         observations_data['observation'].append(obs["observation"].tolist())
-    #         actions_data['action'].append(action.tolist())
-    #         obs, r, done, info, _ = env.step(action)
-    #         reward += r
-    #     print(reward)
     kp = 0.05  # Proportional gain
     ki = 0.001  # Integral gain
     kd = 0.3  # Derivative gain
