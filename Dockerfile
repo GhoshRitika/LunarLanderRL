@@ -22,6 +22,7 @@ RUN conda install -y tensorflow-gpu==1.15.0
 RUN pip install gin-config==0.4.0
 RUN pip install gym==0.17.3
 RUN pip install gym[box2d]
+RUN pip install pandas
 
 # Add a directory for python packages to be mounted
 ENV PYTHONPATH /root/pkgs:$PYTHONPATH
@@ -31,10 +32,8 @@ RUN conda install -y PyOpenGL
 RUN pip install pygame PyOpenGL_accelerate
 
 WORKDIR /root/pkgs
-#fork of the original dl repo with edited 
-RUN git clone --branch ritika https://github.com/GhoshRitika/dl.git
-# WORKDIR /root/pkgs/dl
-# RUN git checkout 650db8abc90053305be95e73ce28da624e9092dc
+RUN git clone https://github.com/GhoshRitika/panda-gym
+RUN pip install -e panda-gym
 
 WORKDIR /root
 # Bash entrypoint

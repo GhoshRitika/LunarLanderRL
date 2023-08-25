@@ -8,7 +8,6 @@ import gymnasium as gym
 import panda_gym
 
 if __name__ == '__main__':
-    # Create the LunarLander environment
     env = gym.make('PandaReach-v3', render_mode="human")
     N = 20
     batch_size = 256

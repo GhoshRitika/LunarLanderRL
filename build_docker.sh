@@ -1,0 +1,1 @@
+docker buildx build --tag shared_autonomy:latest --build-arg PYTHON_VERSION=3.9 .
