@@ -7,50 +7,7 @@ import torch.nn.functional as F
 from torch.distributions.categorical import Categorical
 from diagonal_gaussian import DiagGaussian
 from utils import normalize_action
-
-class PPOMemory:
-    def __init__(self, batch_size):
-        self.states = []
-        self.probs = []
-        self.vals = []
-        self.actions = []
-        self.rewards = []
-        self.dones = []
-
-        self.batch_size = batch_size
-
-    def generate_batches(self):
-        #batch size chunks of shuffled indices
-        n_states = len(self.states)
-        batch_start = np.arange(0, n_states, self.batch_size)
-        indices = np.arange(n_states, dtype=np.int64)
-        np.random.shuffle(indices)
-        batches = [indices[i:i+self.batch_size] for i in batch_start]
-
-        return np.array(self.states),\
-                np.array(self.actions),\
-                np.array(self.probs),\
-                np.array(self.vals),\
-                np.array(self.rewards),\
-                np.array(self.dones),\
-                batches
-
-    def store_memory(self, state, action, probs, vals, reward, done):
-        self.states.append(state)
-        # print("storing memory", action.shape)
-        self.actions.append(action[0])
-        self.probs.append(probs[0])
-        self.vals.append(vals)
-        self.rewards.append(reward)
-        self.dones.append(done)
-
-    def clear_memory(self):
-        self.states = []
-        self.probs = []
-        self.actions = []
-        self.rewards = []
-        self.dones = []
-        self.vals = []
+from PPO import PPOMemory
 
 class ActorCriticNetwork(nn.Module):
     """Policy and Value networks."""
@@ -114,7 +71,6 @@ class Agent:
         self.actorcritic = ActorCriticNetwork(n_actions, input_dims, chkpt_dir=self.chkpt_dir).to(self.device)
         self.opt = optim.Adam(self.actorcritic.parameters())
         self.pi_lr = self.opt.param_groups[0]['lr']
-        # self.critic = CriticNetwork(input_dims, alpha, chkpt_dir=self.chkpt_dir)
         self.max_grad_norm = max_grad_norm
         self.ent_coef = ent_coef
         self.vf_coef = vf_coef
@@ -129,10 +85,8 @@ class Agent:
         if lambda_init < 10:
             lambda_init = np.log(np.exp(lambda_init) - 1)
         log_lambda_tensor = T.tensor(np.array([lambda_init]), dtype=T.float32).to(self.device)
-        # print(log_lambda_tensor)
         self.log_lambda_ = nn.Parameter(
                             log_lambda_tensor)
-        # print(self.log_lambda_)
         self.opt_l = optim.Adam([self.log_lambda_], lr=lambda_lr)
 
         self.memory = PPOMemory(batch_size)
@@ -151,7 +105,6 @@ class Agent:
         print('... loading models ...')
         self.actorcritic.load_checkpoint()
 
-# tmp/residual_dense_reward_tanh doesnt exceed any limits, works OK
     def choose_action(self, observation):
             dist, value, mean, std = self.actorcritic(observation)
             action = dist.sample()
@@ -161,34 +114,8 @@ class Agent:
             mean_detached = mean.detach().cpu().numpy()
             std_detached = std.detach().cpu().numpy()
             action_ass = np.tanh(normalize_action(np.asarray(action_detached), (mean_detached-std_detached), (mean_detached+std_detached)))
-            # print(action_ass)
             return action_ass, probs, value_ass
 
-## filename=f"tmp/residual_dense_reward_just_tanh" Barely does anything
-    # def choose_action(self, observation):
-    #     dist, value, mean, std = self.actorcritic(observation)
-    #     action = dist.sample()
-    #     probs =  dist.log_prob(action).detach().cpu().numpy()
-    #     value_ass = T.squeeze(value).item()
-    #     action_detached = action.detach().cpu().numpy()
-    #     mean_detached = mean.detach().cpu().numpy()
-    #     std_detached = std.detach().cpu().numpy()
-    #     action_ass = np.tanh(action_detached)
-    #     print(action_ass)
-    #     return action_ass, probs, value_ass
-
-## tmp/residual_dense_reward NOT A FAN, exceed actions limits
-    # def choose_action(self, observation):
-    #     dist, value, mean, std = self.actorcritic(observation)
-    #     action = dist.sample()
-    #     probs =  dist.log_prob(action).detach().cpu().numpy()
-    #     value_ass = T.squeeze(value).item()
-    #     action_detached = action.detach().cpu().numpy()
-    #     mean_detached = mean.detach().cpu().numpy()
-    #     std_detached = std.detach().cpu().numpy()
-    #     action_ass = normalize_action(np.asarray(action_detached), (mean_detached-std_detached), (mean_detached+std_detached))
-    #     print(action_ass)
-    #     return action_ass, probs, value_ass
 
     def learn(self):
         lr_frac = self.lr_decay_rate ** (self.t // self.lr_decay_freq)
@@ -227,9 +154,6 @@ class Agent:
 
                 dist, critic_value_, _, _ = self.actorcritic((states, actions))
                 critic_value = T.squeeze(critic_value_)
-                # if self.t < self.policy_training_start:
-                #     pi_loss = T.Tensor([0.0]).to(self.device)
-                # else:
                 new_probs = dist.log_prob(actions)
                 ratio = T.exp(new_probs - old_probs)
                 # Add a new dimension to atargs to match the last dimension of ratio
@@ -242,52 +166,26 @@ class Agent:
                 vloss2 = 0.5*self.mse(value_clipped, vtargs[batch])
                 value_loss = T.max(vloss1, vloss2).mean()
 
-                # compute entropy loss
-                # if self.t < self.policy_training_start:
-                #     ent_loss = T.Tensor([0.0]).to(self.device)
-                # else:
                 ent_loss = dist.entropy().mean()
-                # compute residual regularizer
-                # if self.t < self.policy_training_start:
-                #     reg_loss = T.Tensor([0.0]).to(self.device)
-                # else:
                 if self.l2_reg:
                     reg_loss = dist.rsample().pow(2).sum(dim=-1).mean()
-                else:  # huber loss
+                else:
                     ac_norm = T.norm(dist.rsample(), dim=-1)
                     reg_loss = self.huber(ac_norm, T.zeros_like(ac_norm, dtype=T.float32))
 
-                ###############################
                 # Constrained loss added here.
-                ###############################
-
-                # soft plus on lambda to constrain it to be positive.
                 lambda_ = F.softplus(self.log_lambda_)
-                # print(self.log_lambda_)
-                # print(self.log_lambda_)
-                # if self.t < max(self.policy_training_start, self.lambda_training_start):
-                #   loss_lambda = T.Tensor([0.0]).to(self.device)
-                # else:
                 rewards = T.tensor(reward_arr[batch], dtype=T.float32).to(self.device)
                 dones = T.tensor(dones_arr[batch], dtype=T.float32).to(self.device)
                 neps = (1.0 - dones).sum()
-                # print(neps)
                 loss_lambda = (lambda_ * (rewards.sum()
                                             - self.reward_threshold * neps)
                                 / rewards.size()[0])
-                # Detach the lambda_ tensor
                 detached_lambda = lambda_.detach()
                 # Compute pi_loss using detached_lambda
                 new_pi_loss = (reg_loss + detached_lambda * pi_loss) / (1.0 + detached_lambda)
-                # print(loss_lambda)
-                # if self.t >= self.policy_training_start:
-                # pi_loss = (reg_loss + lambda_ * pi_loss) / (1.0 + lambda_)
                 total_loss = (new_pi_loss + self.vf_coef * value_loss
                                 - self.ent_coef * ent_loss)
-                # print(total_loss)
-                # total_loss = (pi_loss + value_loss)
-                # if self.t >= max(self.policy_training_start,
-                #                  self.lambda_training_start):
                 self.opt_l.zero_grad()
                 loss_lambda.backward(retain_graph=True)
                 self.opt_l.step()

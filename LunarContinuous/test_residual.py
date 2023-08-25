@@ -11,15 +11,13 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     env = gym.make("LunarLanderContinuous-v2")
 
-    N = 128 #2048
+    N = 128
     batch_size = 64
     n_epochs = 10
     alpha = 0.0003
     n_games = 100
 
     filename=f"tmp/residual_final_reg"
-    # filename=f"tmp/residual_final_tanh"
-    # filename=f"tmp/residual_final_norm_tanh"
 
     assistive_agent = Agent(n_actions=env.action_space.shape[0], input_dims=env.observation_space.shape[0],
                    gamma=0.99, gae_lambda=0.95,
@@ -31,7 +29,6 @@ if __name__ == '__main__':
     score_history = []
     for ep in range(10):
         ob = env.reset()
-        # ob=ob[0]
         env.render()
         done = False
         reward = 0.0
@@ -80,16 +77,3 @@ if __name__ == '__main__':
     plt.savefig(f"plots/score{ep}")
     plt.clf()
 
-    # y = [i+1 for i in range(n_steps)]
-    # plt.plot(y, action_h[:,0], label='action_h[0]', color='blue')
-    # plt.plot(y, action_r[:,0], label='action_r[0]', color='green')
-    # plt.plot(y, actions[:,0], label='action[0]', color='red')
-    # plt.plot(y, action_h[:,1], label='action_h[1]', color='blue')
-    # plt.plot(y, action_r[:,1], label='action_r[1]', color='green')
-    # plt.plot(y, actions[:,1], label='action[1]', color='red')
-
-    # plt.xlabel('Iterations')
-    # plt.ylabel('Action Values')
-    # plt.legend()
-    # plt.title('Comparison of Actions')
-    # plt.show()

@@ -3,11 +3,9 @@ import pygame
 import numpy as np
 import time
 
-#####################################
 # Change these to match your joystick
 UP_AXIS = 4
 SIDE_AXIS = 3
-#####################################
 
 
 class LunarLanderJoystickActor(object):
@@ -15,8 +13,6 @@ class LunarLanderJoystickActor(object):
 
     def __init__(self, env, fps=50):
         """Init."""
-        # if env.num_envs > 1:
-        #     raise ValueError("Only one env can be controlled with the joystick.")
         self.env = env
         self.human_agent_action = np.array([[0., 0.]], dtype=np.float32)  # noop
         pygame.joystick.init()
@@ -67,7 +63,6 @@ if __name__ == '__main__':
 
 
     env = gym.make("LunarLanderContinuous-v2")
-    # env = gym.make("LunarLander-v2")
 
     actor = LunarLanderJoystickActor(env)
 
