@@ -57,7 +57,6 @@ class FrankaPandaJoystickActor(object):
             if st > 0.:
                 time.sleep(st)
         self.t = time.time()
-        # print(action)
         return action[0]
 
     def reset(self):

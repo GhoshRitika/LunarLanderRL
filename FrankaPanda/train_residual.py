@@ -21,8 +21,6 @@ if __name__ == '__main__':
     n_games = 5000
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M")
-    # figure_file = f"plots/FrankaReach_residual{timestamp}.png"
-    # filename=f"tmp/residual{timestamp}"
     figure_file = f"plots/FrankaReach_residual_dense_just_tanh.png"
     filename=f"tmp/residual_dense_reward_just_tanh"
 
@@ -86,10 +84,6 @@ if __name__ == '__main__':
             # Compute control action using the PID controller
             action_ = pid_controller.compute_action(error)
 
-            # ob_ = T.tensor(np.array([observation["observation"]]), dtype=T.float32).to(player_agent.bc.device)
-            # action_ = player_agent.bc(ob_)
-            # # action_player = norm_action(env, np.asarray(action_))
-            # action_player = norm_action(env, action_.cpu().numpy())
             ob_ = T.tensor(np.array([observation["observation"]]), dtype=T.float32).to(assistive_agent.device)
             action_player = T.tensor(np.array([action_]), dtype=T.float32).to(assistive_agent.device)
             ob = (ob_, action_player)
@@ -99,8 +93,6 @@ if __name__ == '__main__':
             action = add_actions(env, action_ass, action_)
 
             observation_, reward, done, _, info = env.step(action[0])
-            # if terminated or truncated:
-            #     done = True
             n_steps += 1
             iters +=1
             score += reward
@@ -117,7 +109,6 @@ if __name__ == '__main__':
         assistive_agent.save_models()
         if avg_score > best_score:
             best_score = avg_score
-            # assistive_agent.save_models()
         else:
             print(f"Avg {avg_score} not better than best {best_score}")
 

@@ -10,7 +10,7 @@ import panda_gym
 
 if __name__ == '__main__':
     env = gym.make('PandaReachDoubleDense-v3', render_mode="human", goal_random=False)
-    N = 128 #2048
+    N = 128
     batch_size = 64
     n_epochs = 10
     alpha = 0.0003

@@ -1,6 +1,8 @@
+"""
+"""
 import pandas as pd
 import gym
-from joystick import FrankaPandaJoystickActor, PIDController
+from joystick import FrankaPandaJoystickActor, PIDController 
 
 def collect_expert_demonstrations(env, actor, num_episodes, observations_csv, actions_csv):
     observations_data = {'observation': []}
@@ -62,14 +64,11 @@ if __name__ == '__main__':
     import gymnasium as gym
     import panda_gym
 
-    # Create the LunarLander environment
     env = gym.make('PandaReach-v3', render_mode="human")
 
     # Create the joystick actor
     actor = FrankaPandaJoystickActor(env)
     # Define the number of expert episodes and the CSV filename
     num_episodes = 1000
-    csv_filename = 'expert_demonstrations.csv'
-
     collect_expert_demonstrations(env, actor, num_episodes, 'observations.csv', 'actions.csv')
 
