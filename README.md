@@ -1,14 +1,14 @@
 # Shared Autonomy with Reinforcement Learning
 Author: Ritika Ghosh
 
-https://github.com/GhoshRitika/LunarLanderRL/assets/60728026/944e5f9f-7647-4cbb-b00b-01b157ff75bc
+https://github.com/GhoshRitika/LunarLanderRL/assets/60728026/4acf7e26-f334-4344-9ce5-b0fe06e996d8
 
 ## **Description**
 This project allows for human robot collaboration with the help of an assistive agent which minimally adjusts the human actions to improve the task performance without any prior knowledge or restrictive assumptions about the environment, goal space or human policy. This is an adaptation of model free
 constrained residual policy using proximal policy optimization for shared control. It has been tested on Lunar Lander and Franka Reach environments.
 
 ## **Setup Guidelines**
-The following are the requirements to setup the project:
+The following are the requirements to manually setup the project else `pip install -r requirements.txt`:
 1. Connect to xbox 360 controller.
 2. Make sure all existing packages are most recent and up-to-date
 ```
