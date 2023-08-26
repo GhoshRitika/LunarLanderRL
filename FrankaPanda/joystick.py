@@ -63,6 +63,7 @@ class FrankaPandaJoystickActor(object):
         self.human_agent_action[:] = 0.
 
 class PIDController:
+    """PID Controller."""
     def __init__(self, kp, ki, kd):
         self.kp = kp
         self.ki = ki

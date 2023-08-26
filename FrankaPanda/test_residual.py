@@ -1,7 +1,7 @@
+""" Test the trained model with the joystick controller """
 import gymnasium as gym
 import numpy as np
 import torch as T
-from datetime import datetime
 from Residual import Agent
 from utils import norm_action, normalize_action, add_actions
 from joystick import FrankaPandaJoystickActor

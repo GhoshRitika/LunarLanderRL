@@ -1,3 +1,6 @@
+"""
+Proximal Policy Optimization (PPO) agent for continuous action spaces.
+"""
 import os
 import numpy as np
 import torch as T
@@ -7,6 +10,9 @@ import torch.nn.functional as F
 from diagonal_gaussian import DiagGaussian
 
 class PPOMemory:
+    """
+    Memory class for PPO.
+    """
     def __init__(self, batch_size):
         self.states = []
         self.probs = []
@@ -148,6 +154,7 @@ class Agent:
         return action, probs, value
 
     def learn(self):
+        """Update policy and value parameters using PPO algorithm."""
         self.actorcritic.train()
         lr_frac = self.lr_decay_rate ** (self.t // self.lr_decay_freq)
         for g in self.opt.param_groups:

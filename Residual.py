@@ -1,3 +1,5 @@
+"""
+This file contains the implementation of the Residual learning algorithm with PPO."""
 import os
 import numpy as np
 import torch as T
@@ -106,6 +108,9 @@ class Agent:
         self.actorcritic.load_checkpoint()
 
     def choose_action(self, observation):
+            """
+            Choose action based on the observation
+            """
             dist, value, mean, std = self.actorcritic(observation)
             action = dist.sample()
             probs =  dist.log_prob(action).detach().cpu().numpy()
@@ -118,6 +123,7 @@ class Agent:
 
 
     def learn(self):
+        """ Update policy"""
         lr_frac = self.lr_decay_rate ** (self.t // self.lr_decay_freq)
         for g in self.opt.param_groups:
             g['lr'] = self.pi_lr * lr_frac

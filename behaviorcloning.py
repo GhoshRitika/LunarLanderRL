@@ -1,3 +1,6 @@
+"""
+Behavioral Cloning algorithm for imitation learning with 3 layer neural network, 128 hidden units per layer, and ReLU activation function.
+"""
 import os
 import torch as T
 import torch.nn as nn
@@ -11,7 +14,11 @@ from Residual import PPOMemory
 from torch.utils.data import DataLoader, TensorDataset
 from diagonal_gaussian import DiagGaussian
 
+
 class BCNetwork(nn.Module):
+    """
+    3 layer neural network, 128 hidden units per layer, and ReLU activation function.
+    """
     def __init__(self, n_actions, input_dims, alpha, fc1_dims=128, fc2_dims=128, chkpt_dir='tmp/bc'):
         super(BCNetwork, self).__init__()
         self.input_dims = input_dims
@@ -37,18 +44,29 @@ class BCNetwork(nn.Module):
         self.to(self.device)
 
     def forward(self, state):
-        # print(state.shape)
+        """
+        Forward pass of the behavioral cloning model
+        """
         dist, mean, std = self.bc(state)
         continuous_actions = dist.sample()
         return continuous_actions
 
     def save_checkpoint(self):
+        """
+        Saves the behavioral cloning model
+        """
         T.save(self.state_dict(), self.checkpoint_file)
 
     def load_checkpoint(self):
+        """
+        Loads the behavioral cloning model
+        """
         self.load_state_dict(T.load(self.checkpoint_file))
 
 class BC_Agent:
+    """
+    Behavioral Cloning Agent
+    """
     def __init__(self, n_actions, input_dims, alpha=0.001, batch_size=64, n_epochs=10):
         self.n_epochs = n_epochs
         self.input_dims = input_dims
@@ -56,14 +74,30 @@ class BC_Agent:
         self.memory = PPOMemory(batch_size)
 
     def save_models(self):
+        """
+        Saves the behavioral cloning model
+        """
         print('... saving models ...')
         self.bc.save_checkpoint()
 
     def load_models(self):
+        """
+        Loads the behavioral cloning model
+        """
         print('... loading models ...')
         self.bc.load_checkpoint()
 
     def train_behavioral_cloning(self, observations_csv, actions_csv):
+        """
+        Trains the behavioral cloning model
+         Args:
+        -------
+            observations_csv: path to csv file containing observations
+            actions_csv: path to csv file containing actions
+        Returns
+        -------
+            trained behavioral cloning model
+        """
         observations_df = pd.read_csv(observations_csv)
         actions_df = pd.read_csv(actions_csv)
 

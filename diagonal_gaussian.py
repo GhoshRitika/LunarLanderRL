@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal
 
-
 class DiagGaussian(nn.Module):
     """Diagonal Gaussian distribution.
 

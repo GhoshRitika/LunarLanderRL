@@ -1,3 +1,4 @@
+""" Train the residual agent on PandaReach-v3 environment using PID controller as the human surrogate. """""
 import gymnasium as gym
 import panda_gym
 import numpy as np

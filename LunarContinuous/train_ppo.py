@@ -1,3 +1,4 @@
+"""This file is used to train the PPO agent with the residual network."""
 import gym
 import numpy as np
 import torch as T

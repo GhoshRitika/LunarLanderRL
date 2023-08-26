@@ -1,10 +1,10 @@
-"""
-"""
+""" Collects expert demonstrations using a PID controller."""
 import pandas as pd
 import gym
 from joystick import FrankaPandaJoystickActor, PIDController 
 
 def collect_expert_demonstrations(env, actor, num_episodes, observations_csv, actions_csv):
+    """ Collects expert demonstrations using a PID controller."""
     observations_data = {'observation': []}
     actions_data = {'action': []}
     user_input = input("Press 'y' to append data to existing files or any other key to create new files: ")
