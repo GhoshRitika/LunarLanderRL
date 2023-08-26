@@ -1,0 +1,18 @@
+gym==0.15.7
+numpy==1.21.5
+-e git+ssh://git@github.com/GhoshRitika/panda-gym.git@9786fb3ce89bf3d9758c3e34a3350b97c92f7878#egg=panda_gym
+pandas==1.3.5
+pybullet==3.2.5
+pygame==2.1.0
+pyglet==1.5.0
+pyjoystick==1.2.4
+PyOpenGL==3.1.6
+pyOpenSSL==23.2.0
+pythran==0.10.0
+pytorch-triton-rocm==2.0.2
+tensorboard==2.11.2
+tensorflow==2.11.0
+torch==2.0.1+rocm5.4.2
+torchvision==0.15.2+rocm5.4.2
+
+
