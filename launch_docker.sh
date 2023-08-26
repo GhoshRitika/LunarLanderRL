@@ -1,1 +1,0 @@
-docker run --gpus all --net=host -it --rm --privileged -v `pwd`:/root/pkgs/shared_autonomy shared_autonomy:latest bash
